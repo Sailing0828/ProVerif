@@ -1,0 +1,155 @@
+(* ----channels---- *)
+free Ch: channel.
+
+(* ----Constants and Variable---- *)
+(*free IDA, SKAi, SKAj, RAi, RAj, KAi, KAj :bitstring [private].*)
+(*free IDB, SKBi, SKBj, RBi, RBj, KBi, KBj :bitstring [private].*)
+free IDA, IDB, SKAi, SKBi,KAi, KBi, RAi, RBi, CAi, CBi,PAi,PBi :bitstring [private].
+free P, o, p :bitstring [private].
+free IDR :bitstring.
+(*free S :bitstring [private].*)
+(*free (*PIDA, PIDB,*) :bitstring.*)
+(*free CAi :bitstring.*)
+(*free PAi :bitstring.*)
+(*free m, m1, m2, m3, m4, m5, m6, m10, m11 :bitstring.*)
+(*free  T1, T2, T3, T4, T5, T6, T7, T8, T10, T11 :bitstring.*)
+
+(* ----Functions---- *)
+fun h(bitstring) :bitstring.
+fun xor(bitstring, bitstring) :bitstring.
+equation forall a:bitstring, b:bitstring; xor(xor(a,b), b)=a.
+fun enc(bitstring, bitstring) :bitstring.
+reduc forall l:bitstring, k:bitstring; dec(enc(l,k),k)=l.
+fun con(bitstring, bitstring) :bitstring.
+fun puf(bitstring) :bitstring [private]. 
+fun rep(bitstring, bitstring) :bitstring.
+(*reduc forall o:bitstring, p:bitstring; gen(o)=(p, rep(o, p)).*)
+
+(* ----events---- *)
+event acc1().
+event acc2().
+event acc3().
+event acc4().
+event acc5().
+event acc6().
+
+(* ----query---- *)
+query attacker (IDA).
+query attacker (IDB).
+query attacker (SKAi).
+query attacker (SKBi).
+query attacker (KAi).
+query attacker (KBi).
+query attacker (RAi).
+query attacker (RBi).
+query event (acc6())==>event (acc5()).
+query event (acc5())==>event (acc4()).
+query event (acc4())==>event (acc3()).
+query event (acc3())==>event (acc2()).
+query event (acc2())==>event (acc1()).
+
+(* ----VehicleB---- *)
+let VehicleB=
+ new TB:bitstring;
+ out(Ch, (TB, con(con(IDB, SKBi), TB)));
+ in(Ch, ((*CBi:bitstring, PBi:bitstring,*) m7:bitstring, m8:bitstring, T9:bitstring));
+
+ let RBi1=puf(CBi) in
+ let KBi1=rep(RBi1,PBi) in
+ let S3=dec(m8, h(KBi)) in
+ let KAi2=xor(S3,RBi1) in
+ let m7'=h(xor(xor(xor(KBi,PBi),T9),KAi)) in
+ if (m7'=m7) then event acc5();
+  new T10:bitstring;
+  let S=xor(KAi2,KBi1) in
+  let SKBj=xor(SKBi,m7) in
+  let CBj=xor(IDB,SKBj) in
+  let RBj=puf(CBj) in
+  let m9=h(xor(xor(SKBj,RBj),T10)) in
+  let m10=enc(m7,h(KBi)) in
+  let m11=enc(RBj,h(KBi)) in
+  out(Ch, (m9, m10, m11, T10)).
+
+(* ----VehicleA---- *)
+let VehicleA=
+ in(Ch, (TB:bitstring, PIDB:bitstring));
+ new T1:bitstring;
+ let PIDA=con(con(IDA, SKAi), T1) in
+ out(Ch, (PIDA, PIDB, TB, T1));
+ in(Ch, ((*PAi:bitstring,*) CAi1:bitstring, m1:bitstring, T3:bitstring, T4:bitstring));
+ let RAi1=puf(CAi1) in
+ let KAi1=rep(RAi1,PAi) in
+ let m1'=h(xor(xor(KAi1,PAi),T3)) in
+ if (m1'=m1) then event acc2(); 
+  new T5:bitstring;
+  let SKAj=xor(SKAi,m1) in
+  let CAj=xor(IDA,SKAj) in
+  let RAj=puf(CAj) in
+  let m2=h(xor(xor(SKAj,RAj),T5)) in
+  let m3=enc(RAj, h(KAi1)) in
+  out(Ch, (m2,m3,T5));
+ in(Ch, ((*CBi1:bitstring, PBi:bitstring,*) m4:bitstring, m5:bitstring, m6:bitstring, T7:bitstring, T8:bitstring));
+ new T9:bitstring;
+ 
+ let S1=dec(m5,h(KAi)) in
+ let S2=dec(m6,h(KAi)) in
+ let KBi1=xor(S1,RAi) in
+ let m4'=h(xor(xor(xor(KBi1, PBi),T7),KAi)) in
+ if (m4'=m4) then event acc4();
+  let m7=h(xor(xor(xor(KBi1,PBi),T9),KAi)) in
+  let m8=enc(S2,h(KBi1)) in
+  let S=xor(KAi,KBi1) in
+  out(Ch, ((*CBi, PBi,*) m7,m8,T9)).
+ 
+
+(* ----RSU---- *)
+let RSU=
+ in(Ch, (PIDA:bitstring, PIDB:bitstring, TB:bitstring, T1:bitstring));
+ new T2:bitstring;
+ let m=h(con(P,T2)) in
+ out(Ch, (PIDA, PIDB, (*IDR,*) m, TB, T1, T2));
+ in(Ch, ((*PAi:bitstring,*) CAi1:bitstring, m1:bitstring, T3:bitstring));
+ new T4:bitstring;
+ out(Ch, ((*PAi*) CAi1, m1, T3, T4));
+ in(Ch, (m2:bitstring, m3:bitstring, T5:bitstring));
+ new T6:bitstring;
+ out(Ch, (m2, m3, T5, T6));
+ in(Ch, (CBi1:bitstring, (*PBi:bitstring,*) m4:bitstring, m5:bitstring, m6:bitstring, T7:bitstring));
+ new T8:bitstring;
+ out(Ch, (CBi1, (*PBi,*) m4, m5, m6, T7, T8));
+ in(Ch, (m9:bitstring, m10:bitstring, m11:bitstring, T10:bitstring));
+ new T11:bitstring;
+ out(Ch, (m9, m10, m11, T10, T11)).
+
+(* ----TA---- *)
+let TA=
+ in(Ch, (PIDA:bitstring, PIDB:bitstring, (*IDR:bitstring,*) m:bitstring, TB:bitstring, T1:bitstring, T2:bitstring));
+ let m'=h(con(P, T2)) in
+ if (m'=m) then event acc1();
+  new T3: bitstring;
+  let CAi1=xor(IDA,SKAi) in 
+  let m1=h(xor(xor(KAi,PAi),T3)) in
+  out(Ch, ((*PAi,*) CAi1, m1, T3));
+ in(Ch, (m2:bitstring, m3:bitstring, T5:bitstring, T6:bitstring));
+ let SKAj=xor(SKAi,m1) in
+ let RAj=dec(m3, h(KAi)) in
+ let m2'=h(xor(xor(SKAj,RAj),T5)) in
+ if (m2'=m2) then event acc3();
+  new T7:bitstring;
+  (*let (KAj, PAj)=gen(RAj) in*)
+  let CBi1=xor(IDB,SKBi) in
+  let m4=h(xor(xor(xor(KBi, PBi),T7),KAi)) in
+  let m5=enc(xor(KBi,RAi),h(KAi)) in
+  let m6=enc(xor(KAi,RBi),h(KAi)) in
+  out(Ch, (CBi1, (*PBi*) m4, m5, m6, T7));
+ in(Ch, (m9:bitstring, m10:bitstring, m11:bitstring, T10:bitstring, T11:bitstring));
+ let m7=dec(m10,h(KBi)) in
+ let RBj=dec(m11,h(KBi)) in
+ let SKBj=xor(SKBi,m7) in
+ let m9'=h(xor(xor(SKBj,RBj),T10)) in
+ if (m9'=m9) then event acc6();
+ 0.
+ (*let (KBj,PBj)=gen(RBj) in 0.*)
+
+(* ----main---- *)
+process (VehicleB|VehicleA|RSU|TA)
