@@ -1,0 +1,144 @@
+(* ----channel---- *)
+free Ch: channel.
+
+(* ----Constants and Variable---- *)
+free pbioi, pidi, ni, idi, bioi, gi, pi: bitstring [private].
+free li, pj: bitstring [private].
+free idj: bitstring.
+free kt, kj, ai, nt, ki :bitstring [private].
+free SKr, SKv: bitstring [private].
+
+(* ----Functions---- *)
+fun h(bitstring): bitstring.
+fun xor(bitstring, bitstring): bitstring.
+equation forall a:bitstring, b:bitstring; xor(xor(a, b), b)=a.
+fun enc(bitstring, bitstring): bitstring.
+reduc forall l: bitstring, k:bitstring; dec(enc(l, k), k)=l.
+fun con(bitstring, bitstring): bitstring.
+fun puf(bitstring): bitstring [private].
+fun rep(bitstring, bitstring): bitstring.
+
+(* ----events---- *)
+event acc1().
+event acc2().
+event acc3().
+event acc4().
+event acc5().
+
+(* ----query---- *)
+query attacker (SKr).
+query attacker (SKv).
+query event (acc5())==>event (acc4()).
+query event (acc4())==>event (acc3()).
+query event (acc3())==>event (acc2()).
+query event (acc2())==>event (acc1()).
+
+(* ----Vehicle---- *)
+let Vehicle=
+ (*new ai':bitstring;*)
+ (*new pbioi': bitstring;*)
+ (*new ni':bitstring;*)
+ (*new pidi':bitstring;*)
+ (*new mac1:bitstring;*)
+ (*new mac2:bitstring;*)
+ (*new mac2':bitstring;*)
+ (*new n1:bitstring;*)
+ (*new midi: bitstring;*)
+ (*new xi:bitstring;*)
+ let xi=h(con(pidi, kt)) in
+ let midi=xor(nt, enc(con(pidi, ni), kt)) in
+ let ai'=rep(bioi, gi) in
+ let pbioi'=h(con(idi, ai')) in
+ let mac1=xor(ni,pbioi) in
+ let ni'=xor(mac1,pbioi') in
+ let pidi'=h(con(con(idi, ni'), ai')) in
+ let mac2=h(con(con(pbioi, pidi), ni)) in
+ let mac2'=h(con(con(pbioi', pidi'), ni')) in
+ if (mac2'=mac2) then event acc1();
+  new n1: bitstring;
+  new T1:bitstring;
+  (*new M1:bitstring;*)
+  (*new M2:bitstring;*)
+  let M1=xor(h(con(pidi', T1)), n1) in
+  let M2=h(con(con(con(con(con(midi, xi), idj), ni'), n1), T1)) in
+  out(Ch, (M1, M2, midi, T1));
+ in(Ch, (m:bitstring, M7:bitstring, M8:bitstring, M9:bitstring, T3:bitstring, T4:bitstring));
+ new ri':bitstring;
+ (*new m2':bitstring;*)
+ new idj':bitstring;
+ (*new SKv:bitstring;*)
+ (*new M9':bitstring;*)
+ let m2'=xor(M7, h(con(con(con(n1, xi), ai'), ki))) in
+ let SKv=h(con(con(idj, li), xor(xor(xor(pidi, n1), ai'), m2'))) in
+ let M9'=h(con(con(con(con(con(con(idj, xi), n1), ai'), ki), SKv), T3)) in
+ if (M9'=M9) then event acc5();
+ 0.
+
+(* ----RSU---- *)
+let RSU=
+ in(Ch, (M1:bitstring, M2:bitstring, midi:bitstring, T1:bitstring));
+ new n2:bitstring;
+ (*new M3:bitstring;*)
+ new rj':bitstring;
+ (*new M4:bitstring;*)
+ new T2:bitstring;
+ (*new xj:bitstring;*)
+ let xj=h(con(con(idj, kj), kt)) in
+ let M3=xor(n2, con(li, xj)) in
+ let M4=h(con(con(con(con(con(idj, xj), kj), li), n2), T2)) in
+ out(Ch, (M1, M2, M3, M4, midi, T1, T2));
+ in(Ch, (m:bitstring, M5:bitstring, M6:bitstring, M7:bitstring, M8:bitstring, M9:bitstring, T3:bitstring));
+ (*new m1':bitstring;*)
+ (*new SKr:bitstring;*)
+ (*new M6':bitstring;*)
+ new T4:bitstring;
+ let m1'=xor(M5, h(con(con(n2, xj), li))) in
+ let SKr=h(con(con(idj, li), xor(xor(m1', n2), kj))) in
+ let M6'=h(con(con(con(con(con(idj, xj), li), n2), SKr), T3)) in
+ if (M6'=M6) then event acc4();
+  out(Ch, (m, M7, M8, M9, T3, T4)).
+
+(* ----TA---- *)
+let TA=
+ in(Ch, (M1:bitstring, M2:bitstring, M3:bitstring, M4:bitstring, midi:bitstring, T1:bitstring, T2:bitstring));
+ (*new xj':bitstring;*)
+ (*new n2':bitstring;*)
+ (*new M4':bitstring;*)
+ let xj'=h(con(con(idj, li), kt)) in
+ let n2'=xor(M3, con(li, xj')) in
+ let M4'=h(con(con(con(con(con(idj, xj'), kj), li), n2'), T2)) in
+ if (M4'=M4) then event acc2();
+  (*new n1':bitstring;*)
+  (*new xi':bitstring;*)
+  (*new M2':bitstring;*)
+  let n1'=xor(M1, h(con(pidi, T1))) in
+  let xi'=h(con(pidi, kt)) in
+  let M2'=h(con(con(con(con(con(midi, xi'), idj), ni), n1'), T1)) in
+  if (M2'=M2) then event acc3();
+   new nt':bitstring;
+   (*new SK: bitstring;*)
+   (*new midi':bitstring;*)
+   (*new m:bitstring;*)
+   (*new m1:bitstring;*)
+   (*new m2:bitstring;*)
+   (*new M5:bitstring;*)
+   (*new M6:bitstring;*)
+   (*new M7:bitstring;*)
+   (*new M8:bitstring;*)
+   (*new M9:bitstring;*)
+   new T3:bitstring;
+   let SK=h(con(con(idj, li), xor(xor(xor(xor(xor(pidi, n1'), ai),n2'), kj), nt'))) in
+   let midi'=xor(nt', enc(con(pidi, ni), kt)) in
+   let m=xor(con(idj, li), n1') in
+   let m1=xor(xor(xor(pidi, n1'), ai), nt') in
+   let m2=xor(xor(n2', kj), nt') in
+   let M5=xor(m1, h(con(con(n2', xj'), li))) in
+   let M6=h(con(con(con(con(con(idj, xj'), li), n2'), SK), T3)) in
+   let M7=xor(m2, h(con(con(con(n1', xi'), ai), ki))) in
+   let M8=xor(midi', h(con(con(con(n1', xi'), ai), ki))) in
+   let M9=h(con(con(con(con(con(con(idj, xi'), n1'), ai), ki), SK), T3)) in
+   out(Ch, (m, M5, M6, M7, M8, M9, T3)).
+  
+
+(* ----main---- *)
+process (Vehicle|RSU|TA)
